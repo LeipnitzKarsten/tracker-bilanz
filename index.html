@@ -266,8 +266,8 @@ html,body{height:100%;
 .sheet-body{
   width:100%;background:var(--surface);
   border-radius:28px 28px 0 0;
-  padding-bottom:calc(var(--sab)+8px);
-  max-height:92vh;overflow:hidden;
+  padding-bottom:0;
+  max-height:92dvh;overflow:hidden;
   animation:slideUp .22s cubic-bezier(.32,0,.67,0);
   box-shadow:0 -4px 30px rgba(0,0,0,.12);
 }
@@ -357,7 +357,7 @@ html,body{height:100%;
 #cal-modal.open{display:flex}
 .cal-sheet{
   width:100%;background:var(--surface);
-  border-radius:24px 24px 24px 24px;padding:20px 16px 16px;
+  border-radius:24px 24px 24px 24px;padding:20px 16px 0;
   animation:slideUp .2s cubic-bezier(.32,0,.67,0);
 }
 .cal-head{
@@ -578,6 +578,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       <div class="cat-grid" id="cat-grid"></div>
     </div>
 
+    <div class="bottom-spacer" style="background:#fff"></div>
   </div>
 </div>
 
@@ -591,6 +592,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       <button class="icon-btn" onclick="closeCal()" style="font-size:14px;font-weight:700;width:34px;height:34px">✕</button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
+    <div class="bottom-spacer" style="background:#fff"></div>
   </div>
 </div>
 
@@ -605,6 +607,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
     <button class="mbox-btn del" id="modal-ok">Löschen</button>
     <div class="mbox-sep"></div>
     <button class="mbox-btn can" onclick="closeModal()">Abbrechen</button>
+    <div class="bottom-spacer" style="background:#fff;height:34px"></div>
   </div>
 </div>
 

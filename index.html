@@ -385,6 +385,13 @@ html,body{height:100%;
 .cal-day:disabled{color:var(--border);cursor:default}
 .cal-day.empty{pointer-events:none}
 
+/* ── BOTTOM SPACER (iOS home indicator) ─── */
+.bottom-spacer{
+  height:54px;flex-shrink:0;
+  background:var(--bg);pointer-events:none;
+  display:block;width:100%;
+}
+
 /* ── TOAST ───────────────────────────────── */
 #toast{
   position:fixed;bottom:calc(var(--sab)+90px);left:50%;
@@ -467,6 +474,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
     <div class="bal-arrow">›</div>
   </div>
   <button id="add-btn" onclick="openAdd()">＋&nbsp;&nbsp;Ausgabe eintragen</button>
+  <div class="bottom-spacer"></div>
 </div>
 
 <!-- ════ LIST ════ -->
@@ -484,6 +492,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
     <div class="bal-arrow" style="opacity:.4;font-size:14px">Tippen zum Löschen</div>
   </div>
   <div class="list-scroll" id="list-body"></div>
+  <div class="bottom-spacer"></div>
 </div>
 
 <!-- ════ SETTINGS ════ -->
@@ -526,6 +535,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
     </div>
 
   </div>
+  <div class="bottom-spacer"></div>
 </div>
 
 <!-- ════ ADD SHEET ════ -->

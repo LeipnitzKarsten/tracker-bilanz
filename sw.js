@@ -1,5 +1,5 @@
-const CACHE = 'tracker-bilanz-v4';
-const FILES = ['index.html', 'manifest.json', 'icon.png'];
+const CACHE = 'tracker-bilanz-v5';
+const FILES = ['manifest.json', 'icon.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
@@ -14,8 +14,12 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Don't cache sync server calls
   if (e.request.url.includes('localhost:5001')) return;
+  // HTML immer frisch vom Netzwerk laden – nie cachen
+  if (e.request.destination === 'document' || e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(cached => cached || fetch(e.request))
   );

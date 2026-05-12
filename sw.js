@@ -1,4 +1,4 @@
-const CACHE = 'tracker-bilanz-v1';
+const CACHE = 'tracker-bilanz-v3';
 const FILES = ['index.html', 'manifest.json', 'icon.png'];
 
 self.addEventListener('install', e => {

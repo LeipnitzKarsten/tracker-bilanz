@@ -769,6 +769,8 @@ function login(user) {
   S.syncMonth = nowMonth();
   localStorage.setItem('tb_user', user);
   showScr('main');
+  // Auto-Sync im Hintergrund — 1,5 s Verzögerung damit UI erst fertig lädt
+  setTimeout(autoSync, 1500);
 }
 function logout() {
   S.user = null;
@@ -1010,6 +1012,52 @@ async function doSync() {
       `Terminal öffnen und starten:<br>`+
       `<code>./start_sync.sh</code><br><br>`+
       `Nutze "Zusammenfassung" um Zahlen abzulesen.`;
+  }
+}
+
+// ── AUTO-SYNC ──────────────────────────────────────────────────────────
+// Einmal pro Monat: letzte 3 Monate still im Hintergrund synchronisieren
+async function syncOneMonth(user, month) {
+  const u = USERS[user];
+  const t = totals(user, month);
+  const payload = {
+    user, month,
+    totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100]))
+  };
+  const res = await fetch('http://localhost:5001/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(4000)
+  });
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error||'Fehler');
+  return j;
+}
+
+async function autoSync() {
+  if (!S.user) return;
+  // Einmal pro Monat genügt — bereits erledigt?
+  const autoKey = `tb_autosync_${S.user}_${nowMonth()}`;
+  if (localStorage.getItem(autoKey)) return;
+
+  // Letzte 3 Monate mit Daten sammeln
+  const m0 = nowMonth(), m1 = prevM(m0), m2 = prevM(m1);
+  const months = [m2, m1, m0].filter(m => totalSpent(S.user, m) > 0);
+  if (!months.length) return;
+
+  try {
+    let synced = 0;
+    for (const month of months) {
+      const j = await syncOneMonth(S.user, month);
+      if (j.ok) synced++;
+    }
+    if (synced > 0) {
+      localStorage.setItem(autoKey, new Date().toISOString());
+      showToast(`✓ Auto-Sync: ${synced} Monat${synced>1?'e':''} mit Excel synchronisiert`);
+    }
+  } catch(e) {
+    // Server nicht erreichbar → nächstes Öffnen erneut versuchen, kein Fehler anzeigen
   }
 }
 
@@ -1275,6 +1323,8 @@ function init() {
   if (u && USERS[u]) {
     S.user=u; S.month=nowMonth(); S.syncMonth=nowMonth();
     showScr('main');
+    // Auto-Sync beim Neustart (Auto-Login)
+    setTimeout(autoSync, 1500);
   } else {
     showScr('login');
   }

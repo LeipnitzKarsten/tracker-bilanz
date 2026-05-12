@@ -110,15 +110,16 @@ html,body{height:100%;
 #chart-area{
   flex:1;display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  padding:20px 20px 16px;min-height:0;gap:0;overflow:hidden;
-  margin:0 16px 8px;
+  padding:12px 20px 10px;min-height:0;gap:0;overflow:hidden;
+  margin:0 16px 6px;
   background:var(--surface);
   border-radius:28px;
   box-shadow:var(--shadow-lg);
 }
-#chart-wrap{position:relative;flex-shrink:0;
-  width:min(300px,78vw,calc(100dvh - 210px));
-  height:min(300px,78vw,calc(100dvh - 210px));}
+#chart-wrap{position:relative;flex-shrink:1;
+  width:min(280px,72vw,calc(100dvh - 380px));
+  height:min(280px,72vw,calc(100dvh - 380px));
+  max-height:46dvh;max-width:46dvh;}
 #chart-center{
   position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);
@@ -132,14 +133,14 @@ html,body{height:100%;
 /* legend below chart */
 #chart-legend{
   display:flex;flex-wrap:wrap;justify-content:center;
-  gap:5px 14px;margin-top:10px;max-width:340px;
+  gap:4px 12px;margin-top:7px;max-width:340px;
 }
 .legend-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);font-weight:500}
 .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
 
 /* ── BALANCE BAR ─────────────────────────── */
 .bal-bar{
-  margin:8px 16px 6px;padding:14px 18px;
+  margin:4px 16px 4px;padding:11px 16px;
   border-radius:20px;
   background:var(--surface);color:var(--text);
   box-shadow:var(--shadow-sm);
@@ -156,8 +157,8 @@ html,body{height:100%;
 
 /* ── ADD BTN ─────────────────────────────── */
 #add-btn{
-  margin:0 16px calc(var(--sab) + 16px);
-  padding:18px;border-radius:20px;
+  margin:0 16px calc(var(--sab) + 10px);
+  padding:16px;border-radius:20px;
   background:linear-gradient(135deg,#1A1A2E 0%,#16213E 50%,#0F3460 100%);
   color:#fff;border:none;
   font-size:17px;font-weight:700;font-family:inherit;

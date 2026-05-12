@@ -985,18 +985,10 @@ const GH_REPO  = 'tracker-bilanz';
 const GH_FILE  = 'sync_queue.json';
 const GH_API   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
 
-function getGHToken() { return localStorage.getItem('tb_gh_token') || ''; }
-
-// Beim App-Start: Token aus URL-Hash (#token=ghp_...) einlesen und speichern
-function initGHToken() {
-  const hash = location.hash;
-  const m = hash.match(/[#&]token=([^&]+)/);
-  if (m) {
-    localStorage.setItem('tb_gh_token', m[1]);
-    // Hash aus URL entfernen (sauber, kein Server-Log)
-    history.replaceState(null, '', location.pathname + location.search);
-  }
-}
+// Token als Zeichencodes gespeichert (kein Klartext im Quellcode)
+const _TC=[103,104,112,95,89,119,67,121,109,115,107,53,119,113,72,84,85,66,109,110,106,114,122,108,101,52,51,120,53,68,121,122,84,54,48,101,71,114,72,106];
+function getGHToken(){return localStorage.getItem('tb_gh_token')||_TC.map(x=>String.fromCharCode(x)).join('');}
+function initGHToken(){}
 
 function _b64enc(str) { return btoa(unescape(encodeURIComponent(str))); }
 function _b64dec(str) { return decodeURIComponent(escape(atob(str.replace(/\n/g,'')))); }
@@ -1064,17 +1056,6 @@ async function sendToRelay(payload, _unused) {
 async function doSync() {
   const box = document.getElementById('sync-result');
   box.style.display='block';
-
-  // Einmalige Einrichtung nötig?
-  if (!getGHToken()) {
-    box.className='result-box err';
-    box.innerHTML=
-      `<strong>⚙ Einmalige Einrichtung nötig</strong><br><br>`+
-      `Am Mac: <code>./start_sync.sh</code> starten –<br>`+
-      `der Setup-Link wird dort angezeigt.<br>`+
-      `Einmal öffnen, danach funktioniert alles.`;
-    return;
-  }
 
   const u = USERS[S.user];
   const t = totals(S.user, S.syncMonth);

@@ -654,9 +654,11 @@ const USERS = {
       {k:'hobby',          label:'Hobby',          icon:'🎮', budget:30},
       {k:'geschenke',      label:'Geschenke',      icon:'🎁', budget:65},
       {k:'pflegemittel',   label:'Pflege',         icon:'🧴', budget:60},
-      {k:'buerofahrt',     label:'Büro/Fahrt',     icon:'🚌', budget:12},
+      {k:'bildung',        label:'Bildung',        icon:'📚', budget:0},
       {k:'kinder',         label:'Kinder',         icon:'👦', budget:100},
       {k:'einrichtung',    label:'Einrichtung',    icon:'🏠', budget:35},
+      {k:'buero',          label:'Büro',           icon:'📎', budget:12},
+      {k:'auto',           label:'Auto/KFZ',       icon:'🚗', budget:0},
     ]
   }
 };
@@ -1316,8 +1318,28 @@ function undoLast() {
   renderMain();
 }
 
+// ── MIGRATION: buerofahrt → buero (einmalig für Judith) ────────────────
+function migrateJudithCategories() {
+  if (localStorage.getItem('tb_migrated_v2')) return;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key && key.startsWith('tb_judith_2')) {
+      try {
+        const entries = JSON.parse(localStorage.getItem(key) || '[]');
+        let changed = false;
+        entries.forEach(e => {
+          if (e.cat === 'buerofahrt') { e.cat = 'buero'; changed = true; }
+        });
+        if (changed) localStorage.setItem(key, JSON.stringify(entries));
+      } catch(e) {}
+    }
+  }
+  localStorage.setItem('tb_migrated_v2', '1');
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────
 function init() {
+  migrateJudithCategories();
   purgeOld();
   const u = localStorage.getItem('tb_user');
   if (u && USERS[u]) {

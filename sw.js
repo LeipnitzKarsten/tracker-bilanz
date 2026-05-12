@@ -1,4 +1,4 @@
-const CACHE = 'tracker-bilanz-v5';
+const CACHE = 'tracker-bilanz-v6';
 const FILES = ['manifest.json', 'icon.png'];
 
 self.addEventListener('install', e => {
@@ -15,6 +15,7 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.url.includes('localhost:5001')) return;
+  if (e.request.url.includes('192.168.')) return;
   // HTML immer frisch vom Netzwerk laden – nie cachen
   if (e.request.destination === 'document' || e.request.mode === 'navigate') {
     e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));

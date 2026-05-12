@@ -1062,6 +1062,20 @@ async function sendToRelay(payload, _unused) {
 }
 
 async function doSync() {
+  const box = document.getElementById('sync-result');
+  box.style.display='block';
+
+  // Einmalige Einrichtung nötig?
+  if (!getGHToken()) {
+    box.className='result-box err';
+    box.innerHTML=
+      `<strong>⚙ Einmalige Einrichtung nötig</strong><br><br>`+
+      `Am Mac: <code>./start_sync.sh</code> starten –<br>`+
+      `der Setup-Link wird dort angezeigt.<br>`+
+      `Einmal öffnen, danach funktioniert alles.`;
+    return;
+  }
+
   const u = USERS[S.user];
   const t = totals(S.user, S.syncMonth);
   const total = Object.values(t).reduce((s,v)=>s+v,0);
@@ -1070,21 +1084,19 @@ async function doSync() {
     month: S.syncMonth,
     totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100])),
   };
-  const box = document.getElementById('sync-result');
-  box.style.display='block';
   box.className='result-box info';
   box.textContent='⏳ Synchronisiere …';
   try {
-    const result = await sendToRelay(payload, 10000);
+    await sendToRelay(payload, 10000);
     const t2 = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
     box.className='result-box ok';
     box.textContent=`✓ ${monthLabel(S.syncMonth)} übertragen – ${t2} Uhr\nGesamt: ${eur(total)}`;
   } catch(e) {
     box.className='result-box err';
     box.innerHTML=
-      `<strong>⚠ Synchronisation fehlgeschlagen</strong><br><br>`+
-      `Bitte erneut versuchen.<br>`+
-      `Am Mac: Terminal öffnen → <code>./start_sync.sh</code>`;
+      `<strong>⚠ Sync fehlgeschlagen</strong><br><br>`+
+      (e.message||'Verbindungsfehler')+`<br><br>`+
+      `Mac-Server: <code>./start_sync.sh</code>`;
   }
 }
 

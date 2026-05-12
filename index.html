@@ -519,29 +519,6 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       </div>
     </div>
 
-    <!-- Server URL section -->
-    <div class="set-sec">
-      <div class="set-sec-label">Sync-Server (Mac)</div>
-      <div class="set-card">
-        <div class="set-row no-tap" style="flex-direction:column;align-items:flex-start;gap:8px;cursor:default;padding:14px 16px">
-          <div style="font-size:13px;color:var(--muted)">
-            Standard: <code style="font-size:12px">http://localhost:5001</code><br>
-            Vom iPhone: IP des Macs eingeben (im Terminal: <code style="font-size:12px">ipconfig getifaddr en0</code>)
-          </div>
-          <input id="server-url-inp"
-            type="url" inputmode="url" autocorrect="off" autocapitalize="none"
-            placeholder="http://192.168.x.x:5001"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);
-                   font-size:15px;font-family:inherit;background:var(--surface2);color:var(--text)"
-            onchange="saveServerUrl(this.value)"
-            onblur="saveServerUrl(this.value)">
-          <button class="set-btn" onclick="resetServerUrl()" style="align-self:flex-end;font-size:13px;padding:8px 16px">
-            Zurücksetzen
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Account -->
     <div class="set-sec">
       <div class="set-sec-label">Account</div>
@@ -990,8 +967,6 @@ function renderSettings() {
       ${monthLabel(m)}</div>`
   ).join('');
 
-  // Server URL input
-  initServerUrlInput();
 }
 
 function setSyncMonth(m) {
@@ -1002,28 +977,37 @@ function setSyncMonth(m) {
 }
 
 // ── SYNC ───────────────────────────────────────────────────────────────
-// ── SERVER URL (konfigurierbar für iPhone über WLAN) ───────────────────
-function getServerUrl() {
-  return (localStorage.getItem('tb_server_url') || 'http://localhost:5001').replace(/\/$/, '');
-}
-function saveServerUrl(val) {
-  const clean = val.trim().replace(/\/$/, '');
-  if (clean) localStorage.setItem('tb_server_url', clean);
-  else localStorage.removeItem('tb_server_url');
-}
-function resetServerUrl() {
-  localStorage.removeItem('tb_server_url');
-  const inp = document.getElementById('server-url-inp');
-  if (inp) inp.value = '';
-  showToast('Server-URL zurückgesetzt (localhost)');
-}
-function initServerUrlInput() {
-  const inp = document.getElementById('server-url-inp');
-  if (inp) {
-    const stored = localStorage.getItem('tb_server_url');
-    inp.value = stored || '';
-    inp.placeholder = 'http://192.168.x.x:5001  (leer = localhost)';
+// Cloud-Relay auf Railway – iPhone kann von überall synchronisieren.
+// Nach Deployment in relay_server.py die URL hier eintragen:
+const CLOUD_RELAY_URL = 'https://CLOUD_RELAY_URL_HERE';
+const CLOUD_SECRET    = 'tb-sync-2026';
+const LOCAL_SYNC_URL  = 'http://localhost:5001';
+
+async function sendToRelay(payload, timeoutMs = 10000) {
+  // Versucht zuerst Cloud-Relay, dann lokalen Server als Fallback
+  const targets = [];
+  if (!CLOUD_RELAY_URL.includes('CLOUD_RELAY_URL_HERE')) {
+    targets.push({ url: `${CLOUD_RELAY_URL}/sync`, body: {...payload, secret: CLOUD_SECRET} });
   }
+  targets.push({ url: `${LOCAL_SYNC_URL}/sync`, body: payload });
+
+  let lastErr = null;
+  for (const target of targets) {
+    try {
+      const res = await fetch(target.url, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(target.body),
+        signal: AbortSignal.timeout(timeoutMs)
+      });
+      const j = await res.json();
+      if (j.ok) return { ok: true, source: target.url, data: j };
+      lastErr = new Error(j.error || 'Fehler');
+    } catch(e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr || new Error('Nicht erreichbar');
 }
 
 async function doSync() {
@@ -1038,30 +1022,17 @@ async function doSync() {
   const box = document.getElementById('sync-result');
   box.style.display='block';
   box.className='result-box info';
-  const serverUrl = getServerUrl();
-  box.textContent=`⏳ Verbinde mit ${serverUrl} …`;
+  box.textContent='⏳ Synchronisiere …';
   try {
-    const res = await fetch(`${serverUrl}/sync`, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload),
-      signal:AbortSignal.timeout(8000)
-    });
-    const j = await res.json();
-    if (j.ok) {
-      const t2 = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
-      box.className='result-box ok';
-      box.textContent=`✓ ${monthLabel(S.syncMonth)} übertragen – ${t2} Uhr\nGesamt: ${eur(total)}`;
-    } else {
-      throw new Error(j.error||'Fehler');
-    }
+    const result = await sendToRelay(payload, 10000);
+    const t2 = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    box.className='result-box ok';
+    box.textContent=`✓ ${monthLabel(S.syncMonth)} übertragen – ${t2} Uhr\nGesamt: ${eur(total)}`;
   } catch(e) {
     box.className='result-box err';
     box.innerHTML=
-      `<strong>⚠ Sync-Server nicht erreichbar</strong><br><br>`+
-      `Vom iPhone: Mac-IP in Einstellungen eintragen.<br>`+
-      `Im Mac-Terminal: <code>ipconfig getifaddr en0</code><br>`+
-      `Dann eingeben: <code>http://[IP]:5001</code><br><br>`+
+      `<strong>⚠ Synchronisation fehlgeschlagen</strong><br><br>`+
+      `Bitte erneut versuchen.<br>`+
       `Am Mac: Terminal öffnen → <code>./start_sync.sh</code>`;
   }
 }
@@ -1075,15 +1046,7 @@ async function syncOneMonth(user, month) {
     user, month,
     totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100]))
   };
-  const res = await fetch(`${getServerUrl()}/sync`, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(4000)
-  });
-  const j = await res.json();
-  if (!j.ok) throw new Error(j.error||'Fehler');
-  return j;
+  return sendToRelay(payload, 5000);
 }
 
 async function autoSync() {

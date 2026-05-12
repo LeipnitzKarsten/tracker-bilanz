@@ -575,8 +575,10 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
 <div id="cal-modal" onclick="if(event.target===this)closeCal()">
   <div class="cal-sheet">
     <div class="cal-head">
+      <button class="mnav-btn" id="cal-prev" onclick="navCal(-1)" style="width:34px;height:34px;font-size:16px">‹</button>
       <div class="cal-title" id="cal-title"></div>
-      <button class="icon-btn" onclick="closeCal()" style="font-size:14px;font-weight:700">✕</button>
+      <button class="mnav-btn" id="cal-next" onclick="navCal(1)" style="width:34px;height:34px;font-size:16px">›</button>
+      <button class="icon-btn" onclick="closeCal()" style="font-size:14px;font-weight:700;width:34px;height:34px">✕</button>
     </div>
     <div class="cal-grid" id="cal-grid"></div>
   </div>
@@ -1142,12 +1144,15 @@ function pickCat(catKey) {
   const amt = parseAmt();
   if (!amt) return;
   const note = document.getElementById('note-inp').value.trim();
-  const entry = addEntry(S.user, S.month, {cat:catKey, amount:amt, date:S.inputDate, note});
-  S.lastEntry = entry;
+  // Save to the month of the selected date, not necessarily S.month
+  const entryMonth = S.inputDate.slice(0,7);
+  const entry = addEntry(S.user, entryMonth, {cat:catKey, amount:amt, date:S.inputDate, note});
+  S.lastEntry = {...entry, month: entryMonth};
   closeAdd();
   renderMain();
   const cat = USERS[S.user].cats.find(c=>c.k===catKey);
-  showToast(`${cat?.icon||''} −${eur(amt)} gespeichert`);
+  const isOtherMonth = entryMonth !== S.month;
+  showToast(`${cat?.icon||''} −${eur(amt)} ${isOtherMonth ? 'in '+monthLabel(entryMonth)+' ' : ''}gespeichert`);
 }
 function parseAmt() {
   return parseFloat(S.input.replace(',','.')) || 0;
@@ -1186,13 +1191,21 @@ function applyDate(val) {
   document.getElementById('date-lbl').textContent = fmtDateLong(val);
 }
 function openCal() {
-  const [y, mo] = S.month.split('-').map(Number);
+  // Start calendar at the month of the currently selected date
+  S.calMonth = S.inputDate.slice(0,7);
+  renderCal();
+  document.getElementById('cal-modal').classList.add('open');
+}
+function renderCal() {
+  const [y, mo] = S.calMonth.split('-').map(Number);
   const daysInMonth = new Date(y, mo, 0).getDate();
   const firstDay = new Date(y, mo-1, 1).getDay();
-  const offset = (firstDay + 6) % 7; // Monday-first
+  const offset = (firstDay + 6) % 7;
   const todayStr = today();
-  document.getElementById('cal-title').textContent =
-    `${MONTHS[mo-1]} ${y}`;
+  const minMonth = monthBack(nowMonth(), 11); // max 11 Monate zurück
+  document.getElementById('cal-title').textContent = `${MONTHS[mo-1]} ${y}`;
+  document.getElementById('cal-prev').disabled = S.calMonth <= minMonth;
+  document.getElementById('cal-next').disabled = S.calMonth >= nowMonth();
   let html = '';
   ['Mo','Di','Mi','Do','Fr','Sa','So'].forEach(d =>
     html += `<div class="cal-wd">${d}</div>`);
@@ -1207,7 +1220,10 @@ function openCal() {
       onclick="pickDay('${ds}')">${d}</button>`;
   }
   document.getElementById('cal-grid').innerHTML = html;
-  document.getElementById('cal-modal').classList.add('open');
+}
+function navCal(dir) {
+  S.calMonth = dir < 0 ? prevM(S.calMonth) : nextM(S.calMonth);
+  renderCal();
 }
 function closeCal() {
   document.getElementById('cal-modal').classList.remove('open');
@@ -1232,7 +1248,7 @@ function showToast(msg) {
 }
 function undoLast() {
   if (!S.lastEntry) return;
-  removeEntry(S.user, S.month, S.lastEntry.id);
+  removeEntry(S.user, S.lastEntry.month || S.month, S.lastEntry.id);
   S.lastEntry=null;
   document.getElementById('toast').classList.remove('show');
   clearTimeout(S.toastTmr);

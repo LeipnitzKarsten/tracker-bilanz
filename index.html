@@ -977,37 +977,88 @@ function setSyncMonth(m) {
 }
 
 // ── SYNC ───────────────────────────────────────────────────────────────
-// Cloud-Relay auf Railway – iPhone kann von überall synchronisieren.
-// Nach Deployment in relay_server.py die URL hier eintragen:
-const CLOUD_RELAY_URL = 'https://CLOUD_RELAY_URL_HERE';
-const CLOUD_SECRET    = 'tb-sync-2026';
-const LOCAL_SYNC_URL  = 'http://localhost:5001';
+// GitHub als kostenloser Relay: sync_queue.json im Repo als Zwischenspeicher.
+// Token wird EINMALIG per URL-Hash eingelesen (#token=ghp_...) und in
+// localStorage gespeichert. Danach unsichtbar für immer.
+const GH_OWNER = 'LeipnitzKarsten';
+const GH_REPO  = 'tracker-bilanz';
+const GH_FILE  = 'sync_queue.json';
+const GH_API   = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`;
 
-async function sendToRelay(payload, timeoutMs = 10000) {
-  // Versucht zuerst Cloud-Relay, dann lokalen Server als Fallback
-  const targets = [];
-  if (!CLOUD_RELAY_URL.includes('CLOUD_RELAY_URL_HERE')) {
-    targets.push({ url: `${CLOUD_RELAY_URL}/sync`, body: {...payload, secret: CLOUD_SECRET} });
+function getGHToken() { return localStorage.getItem('tb_gh_token') || ''; }
+
+// Beim App-Start: Token aus URL-Hash (#token=ghp_...) einlesen und speichern
+function initGHToken() {
+  const hash = location.hash;
+  const m = hash.match(/[#&]token=([^&]+)/);
+  if (m) {
+    localStorage.setItem('tb_gh_token', m[1]);
+    // Hash aus URL entfernen (sauber, kein Server-Log)
+    history.replaceState(null, '', location.pathname + location.search);
   }
-  targets.push({ url: `${LOCAL_SYNC_URL}/sync`, body: payload });
+}
 
-  let lastErr = null;
-  for (const target of targets) {
-    try {
-      const res = await fetch(target.url, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(target.body),
-        signal: AbortSignal.timeout(timeoutMs)
-      });
-      const j = await res.json();
-      if (j.ok) return { ok: true, source: target.url, data: j };
-      lastErr = new Error(j.error || 'Fehler');
-    } catch(e) {
-      lastErr = e;
+function _b64enc(str) { return btoa(unescape(encodeURIComponent(str))); }
+function _b64dec(str) { return decodeURIComponent(escape(atob(str.replace(/\n/g,'')))); }
+
+async function sendToGitHub(payload) {
+  const token = getGHToken();
+  if (!token) throw new Error('Kein GitHub-Token. Setup-Link nochmal öffnen.');
+  const headers = {
+    'Authorization': `token ${token}`,
+    'Accept': 'application/vnd.github.v3+json',
+    'Content-Type': 'application/json'
+  };
+  // 1. Aktuelle Queue lesen
+  let items = [], sha = null;
+  try {
+    const r = await fetch(GH_API, {headers, signal: AbortSignal.timeout(8000)});
+    if (r.ok) {
+      const fd = await r.json();
+      sha = fd.sha;
+      items = JSON.parse(_b64dec(fd.content)).items || [];
     }
+  } catch(e) { /* Queue noch leer oder nicht erreichbar */ }
+
+  // 2. Neuen Eintrag anhängen
+  items.push({...payload, ts: Date.now()});
+
+  // 3. Zurückschreiben
+  const body = {
+    message: `sync: ${payload.user} ${payload.month}`,
+    content: _b64enc(JSON.stringify({items}, null, 2))
+  };
+  if (sha) body.sha = sha;
+
+  const putRes = await fetch(GH_API, {
+    method: 'PUT', headers,
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(12000)
+  });
+  if (!putRes.ok) {
+    const err = await putRes.json().catch(()=>({}));
+    throw new Error(err.message || `GitHub ${putRes.status}`);
   }
-  throw lastErr || new Error('Nicht erreichbar');
+  return {ok: true};
+}
+
+async function sendToLocal(payload) {
+  const res = await fetch('http://localhost:5001/sync', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(4000)
+  });
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || 'Fehler');
+  return j;
+}
+
+async function sendToRelay(payload, _unused) {
+  // Erst lokalen Mac-Server versuchen (sofortiger Sync wenn Mac offen)
+  // Dann GitHub als Fallback (funktioniert von überall)
+  try { return await sendToLocal(payload); } catch(e) {}
+  return sendToGitHub(payload);
 }
 
 async function doSync() {
@@ -1351,6 +1402,7 @@ function migrateJudithCategories() {
 
 // ── INIT ───────────────────────────────────────────────────────────────
 function init() {
+  initGHToken();          // Token aus URL-Hash einlesen (einmalige Einrichtung)
   migrateJudithCategories();
   purgeOld();
   const u = localStorage.getItem('tb_user');

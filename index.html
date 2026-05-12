@@ -519,6 +519,29 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       </div>
     </div>
 
+    <!-- Server URL section -->
+    <div class="set-sec">
+      <div class="set-sec-label">Sync-Server (Mac)</div>
+      <div class="set-card">
+        <div class="set-row no-tap" style="flex-direction:column;align-items:flex-start;gap:8px;cursor:default;padding:14px 16px">
+          <div style="font-size:13px;color:var(--muted)">
+            Standard: <code style="font-size:12px">http://localhost:5001</code><br>
+            Vom iPhone: IP des Macs eingeben (im Terminal: <code style="font-size:12px">ipconfig getifaddr en0</code>)
+          </div>
+          <input id="server-url-inp"
+            type="url" inputmode="url" autocorrect="off" autocapitalize="none"
+            placeholder="http://192.168.x.x:5001"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);
+                   font-size:15px;font-family:inherit;background:var(--surface2);color:var(--text)"
+            onchange="saveServerUrl(this.value)"
+            onblur="saveServerUrl(this.value)">
+          <button class="set-btn" onclick="resetServerUrl()" style="align-self:flex-end;font-size:13px;padding:8px 16px">
+            Zurücksetzen
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Account -->
     <div class="set-sec">
       <div class="set-sec-label">Account</div>
@@ -966,6 +989,9 @@ function renderSettings() {
     `<div class="chip${S.syncMonth===m?' on':''}" onclick="setSyncMonth('${m}')">
       ${monthLabel(m)}</div>`
   ).join('');
+
+  // Server URL input
+  initServerUrlInput();
 }
 
 function setSyncMonth(m) {
@@ -976,6 +1002,30 @@ function setSyncMonth(m) {
 }
 
 // ── SYNC ───────────────────────────────────────────────────────────────
+// ── SERVER URL (konfigurierbar für iPhone über WLAN) ───────────────────
+function getServerUrl() {
+  return (localStorage.getItem('tb_server_url') || 'http://localhost:5001').replace(/\/$/, '');
+}
+function saveServerUrl(val) {
+  const clean = val.trim().replace(/\/$/, '');
+  if (clean) localStorage.setItem('tb_server_url', clean);
+  else localStorage.removeItem('tb_server_url');
+}
+function resetServerUrl() {
+  localStorage.removeItem('tb_server_url');
+  const inp = document.getElementById('server-url-inp');
+  if (inp) inp.value = '';
+  showToast('Server-URL zurückgesetzt (localhost)');
+}
+function initServerUrlInput() {
+  const inp = document.getElementById('server-url-inp');
+  if (inp) {
+    const stored = localStorage.getItem('tb_server_url');
+    inp.value = stored || '';
+    inp.placeholder = 'http://192.168.x.x:5001  (leer = localhost)';
+  }
+}
+
 async function doSync() {
   const u = USERS[S.user];
   const t = totals(S.user, S.syncMonth);
@@ -983,20 +1033,19 @@ async function doSync() {
   const payload = {
     user: S.user,
     month: S.syncMonth,
-    month_display: monthLabel(S.syncMonth),
     totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100])),
-    total: Math.round(total*100)/100
   };
   const box = document.getElementById('sync-result');
   box.style.display='block';
   box.className='result-box info';
-  box.textContent='⏳ Verbinde mit sync_server…';
+  const serverUrl = getServerUrl();
+  box.textContent=`⏳ Verbinde mit ${serverUrl} …`;
   try {
-    const res = await fetch('http://localhost:5001/sync', {
+    const res = await fetch(`${serverUrl}/sync`, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(payload),
-      signal:AbortSignal.timeout(6000)
+      signal:AbortSignal.timeout(8000)
     });
     const j = await res.json();
     if (j.ok) {
@@ -1010,10 +1059,10 @@ async function doSync() {
     box.className='result-box err';
     box.innerHTML=
       `<strong>⚠ Sync-Server nicht erreichbar</strong><br><br>`+
-      `Excel-Sync ist nur am Mac möglich.<br>`+
-      `Terminal öffnen und starten:<br>`+
-      `<code>./start_sync.sh</code><br><br>`+
-      `Nutze "Zusammenfassung" um Zahlen abzulesen.`;
+      `Vom iPhone: Mac-IP in Einstellungen eintragen.<br>`+
+      `Im Mac-Terminal: <code>ipconfig getifaddr en0</code><br>`+
+      `Dann eingeben: <code>http://[IP]:5001</code><br><br>`+
+      `Am Mac: Terminal öffnen → <code>./start_sync.sh</code>`;
   }
 }
 
@@ -1026,7 +1075,7 @@ async function syncOneMonth(user, month) {
     user, month,
     totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100]))
   };
-  const res = await fetch('http://localhost:5001/sync', {
+  const res = await fetch(`${getServerUrl()}/sync`, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(payload),

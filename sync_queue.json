@@ -4,49 +4,17 @@
       "user": "karsten",
       "month": "2026-05",
       "totals": {
-        "nahrungsmittel": 467.8,
-        "hobby": 71.9,
+        "nahrungsmittel": 743.74,
+        "hobby": 137.87,
         "geschenke": 0,
-        "pflegemittel": 10.83,
+        "pflegemittel": 11.83,
         "bildung": 0,
-        "kinder": 89.7,
-        "einrichtung": 0,
+        "kinder": 190.28,
+        "einrichtung": 6.99,
         "buero": 0,
-        "auto": 130.98
+        "auto": 254.71
       },
-      "ts": 1778644843469
-    },
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 467.8,
-        "hobby": 71.9,
-        "geschenke": 0,
-        "pflegemittel": 10.83,
-        "bildung": 0,
-        "kinder": 89.7,
-        "einrichtung": 0,
-        "buero": 0,
-        "auto": 130.98
-      },
-      "ts": 1778647783853
-    },
-    {
-      "user": "judith",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 57.33,
-        "hobby": 0,
-        "geschenke": 0,
-        "pflegemittel": 0,
-        "bildung": 0,
-        "kinder": 0,
-        "einrichtung": 0,
-        "buero": 0,
-        "auto": 0
-      },
-      "ts": 1778685685434
+      "ts": 1779689851129
     },
     {
       "user": "judith",
@@ -63,102 +31,6 @@
         "auto": 0
       },
       "ts": 1778865547626
-    },
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 565,
-        "hobby": 121.89,
-        "geschenke": 0,
-        "pflegemittel": 10.83,
-        "bildung": 0,
-        "kinder": 89.7,
-        "einrichtung": 6.99,
-        "buero": 0,
-        "auto": 254.71
-      },
-      "ts": 1778997977592
-    },
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 743.74,
-        "hobby": 137.87,
-        "geschenke": 0,
-        "pflegemittel": 11.83,
-        "bildung": 0,
-        "kinder": 190.28,
-        "einrichtung": 6.99,
-        "buero": 0,
-        "auto": 254.71
-      },
-      "ts": 1779606075555
-    },
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 743.74,
-        "hobby": 137.87,
-        "geschenke": 0,
-        "pflegemittel": 11.83,
-        "bildung": 0,
-        "kinder": 190.28,
-        "einrichtung": 6.99,
-        "buero": 0,
-        "auto": 254.71
-      },
-      "ts": 1779689837008
-    },
-    {
-      "user": "karsten",
-      "month": "2026-03",
-      "totals": {
-        "nahrungsmittel": 0,
-        "hobby": 0,
-        "geschenke": 0,
-        "pflegemittel": 0,
-        "bildung": 0,
-        "kinder": 0,
-        "einrichtung": 0,
-        "buero": 0,
-        "auto": 0
-      },
-      "ts": 1779689846633
-    },
-    {
-      "user": "karsten",
-      "month": "2026-04",
-      "totals": {
-        "nahrungsmittel": 0,
-        "hobby": 0,
-        "geschenke": 0,
-        "pflegemittel": 0,
-        "bildung": 0,
-        "kinder": 0,
-        "einrichtung": 0,
-        "buero": 0,
-        "auto": 0
-      },
-      "ts": 1779689848912
-    },
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 743.74,
-        "hobby": 137.87,
-        "geschenke": 0,
-        "pflegemittel": 11.83,
-        "bildung": 0,
-        "kinder": 190.28,
-        "einrichtung": 6.99,
-        "buero": 0,
-        "auto": 254.71
-      },
-      "ts": 1779689851129
     }
   ]
 }

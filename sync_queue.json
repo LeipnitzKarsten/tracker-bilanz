@@ -1,36 +1,3 @@
 {
-  "items": [
-    {
-      "user": "karsten",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 743.74,
-        "hobby": 137.87,
-        "geschenke": 0,
-        "pflegemittel": 11.83,
-        "bildung": 0,
-        "kinder": 190.28,
-        "einrichtung": 6.99,
-        "buero": 0,
-        "auto": 254.71
-      },
-      "ts": 1779689851129
-    },
-    {
-      "user": "judith",
-      "month": "2026-05",
-      "totals": {
-        "nahrungsmittel": 57.33,
-        "hobby": 0,
-        "geschenke": 0,
-        "pflegemittel": 0,
-        "bildung": 0,
-        "kinder": 0,
-        "einrichtung": 0,
-        "buero": 0,
-        "auto": 0
-      },
-      "ts": 1778865547626
-    }
-  ]
+  "items": []
 }

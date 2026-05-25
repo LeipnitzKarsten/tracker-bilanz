@@ -127,6 +127,22 @@
         "auto": 0
       },
       "ts": 1779689846633
+    },
+    {
+      "user": "karsten",
+      "month": "2026-04",
+      "totals": {
+        "nahrungsmittel": 0,
+        "hobby": 0,
+        "geschenke": 0,
+        "pflegemittel": 0,
+        "bildung": 0,
+        "kinder": 0,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 0
+      },
+      "ts": 1779689848912
     }
   ]
 }

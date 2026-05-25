@@ -621,6 +621,10 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
 const MONTHS = ['Januar','Februar','März','April','Mai','Juni',
                 'Juli','August','September','Oktober','November','Dezember'];
 
+// Frühester Monat der jemals in die Excel-Bilanz synchronisiert werden darf.
+// März + April 2026 existieren nur wegen App-Neustart — nie synchronisieren.
+const SYNC_FROM = '2026-05';
+
 const COLORS = [
   '#3B82F6', // blue
   '#10B981', // emerald
@@ -961,8 +965,11 @@ function renderSettings() {
   document.getElementById('sync-result').style.display='none';
   document.getElementById('sync-result').className='result-box';
 
-  // Build month chips
-  const chips = [nowMonth(), monthBack(nowMonth(),1), monthBack(nowMonth(),2)];
+  // Build month chips — nur Monate ab SYNC_FROM anzeigen
+  const chips = [nowMonth(), monthBack(nowMonth(),1), monthBack(nowMonth(),2)]
+    .filter(m => m >= SYNC_FROM);
+  // syncMonth zurücksetzen falls er vor SYNC_FROM liegt
+  if (S.syncMonth < SYNC_FROM) S.syncMonth = chips[0] || nowMonth();
   document.getElementById('chip-row').innerHTML = chips.map(m =>
     `<div class="chip${S.syncMonth===m?' on':''}" onclick="setSyncMonth('${m}')">
       ${monthLabel(m)}</div>`
@@ -1100,9 +1107,9 @@ async function autoSync() {
   const autoKey = `tb_autosync_${S.user}_${nowMonth()}`;
   if (localStorage.getItem(autoKey)) return;
 
-  // Letzte 3 Monate mit Daten sammeln
+  // Letzte 3 Monate mit Daten sammeln — nie vor SYNC_FROM
   const m0 = nowMonth(), m1 = prevM(m0), m2 = prevM(m1);
-  const months = [m2, m1, m0].filter(m => totalSpent(S.user, m) > 0);
+  const months = [m2, m1, m0].filter(m => m >= SYNC_FROM && totalSpent(S.user, m) > 0);
   if (!months.length) return;
 
   try {

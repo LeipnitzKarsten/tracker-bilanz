@@ -310,6 +310,7 @@ html,body{height:100%;
   padding:17px 8px;border-radius:16px;background:var(--bg);
   border:none;font-size:22px;font-weight:600;font-family:inherit;
   color:var(--text);cursor:pointer;transition:background .1s,transform .1s;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
 .nk:active{background:var(--border);transform:scale(.92)}
 .nk.del{background:none;color:var(--muted);font-size:17px}
@@ -335,6 +336,7 @@ html,body{height:100%;
   padding:13px 14px;border-radius:14px;
   background:var(--bg);border:1.5px solid transparent;
   cursor:pointer;transition:all .15s;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent;
 }
 .cat-tile:active{background:var(--surface2);border-color:var(--border)}
 .tile-ic{font-size:22px;flex-shrink:0}
@@ -554,15 +556,15 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       <input type="text" id="note-inp" placeholder="Notiz (optional)" maxlength="50"
         autocorrect="off" autocapitalize="off">
       <div class="npad">
-        <button class="nk" onclick="nk('7')">7</button>
-        <button class="nk" onclick="nk('8')">8</button>
-        <button class="nk" onclick="nk('9')">9</button>
-        <button class="nk" onclick="nk('4')">4</button>
-        <button class="nk" onclick="nk('5')">5</button>
-        <button class="nk" onclick="nk('6')">6</button>
         <button class="nk" onclick="nk('1')">1</button>
         <button class="nk" onclick="nk('2')">2</button>
         <button class="nk" onclick="nk('3')">3</button>
+        <button class="nk" onclick="nk('4')">4</button>
+        <button class="nk" onclick="nk('5')">5</button>
+        <button class="nk" onclick="nk('6')">6</button>
+        <button class="nk" onclick="nk('7')">7</button>
+        <button class="nk" onclick="nk('8')">8</button>
+        <button class="nk" onclick="nk('9')">9</button>
         <button class="nk" onclick="nk(',')">&#44;</button>
         <button class="nk" onclick="nk('0')">0</button>
         <button class="nk del" onclick="nk('del')">⌫</button>

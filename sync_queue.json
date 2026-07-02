@@ -111,6 +111,22 @@
         "auto": 12.4
       },
       "ts": 1782921917904
+    },
+    {
+      "user": "karsten",
+      "month": "2026-05",
+      "totals": {
+        "nahrungsmittel": 887.44,
+        "hobby": 137.87,
+        "geschenke": 0,
+        "pflegemittel": 83.94,
+        "bildung": 0,
+        "kinder": 191.28,
+        "einrichtung": 6.99,
+        "buero": 0,
+        "auto": 254.71
+      },
+      "ts": 1782969393529
     }
   ]
 }

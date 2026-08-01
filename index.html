@@ -950,6 +950,7 @@ function askDelete(id, label, amount) {
     `${label} ${eur(amount)} löschen?`;
   document.getElementById('modal-ok').onclick = () => {
     removeEntry(S.user, S.month, S.pendingDel);
+    syncSoon(S.user, S.month);
     closeModal();
     renderList();
     renderMain();
@@ -1106,29 +1107,70 @@ async function syncOneMonth(user, month) {
 
 async function autoSync() {
   if (!S.user) return;
-  // Einmal pro Monat genügt — bereits erledigt?
-  const autoKey = `tb_autosync_${S.user}_${nowMonth()}`;
-  if (localStorage.getItem(autoKey)) return;
-
-  // Letzte 3 Monate mit Daten sammeln — nie vor SYNC_FROM
+  // Letzte 3 Monate mit Daten in die Warteschlange — nie vor SYNC_FROM
   const m0 = nowMonth(), m1 = prevM(m0), m2 = prevM(m1);
-  const months = [m2, m1, m0].filter(m => m >= SYNC_FROM && totalSpent(S.user, m) > 0);
-  if (!months.length) return;
+  [m2, m1, m0]
+    .filter(m => m >= SYNC_FROM && totalSpent(S.user, m) > 0)
+    .forEach(m => markDirty(S.user, m));
+  flushPending();
+}
 
+// ── HINTERGRUND-SYNC (automatisch nach jeder Eingabe) ──────────────────
+// Jede Änderung markiert ihren Monat als "offen". Ein entprellter Flush
+// schickt offene Monate still im Hintergrund weg. Kein Warten, keine
+// Meldung. Ohne Internet bleibt der Monat offen und geht beim nächsten
+// Mal (Eingabe, App-Start oder Netz wieder da) automatisch raus.
+const PENDING_KEY = 'tb_pending_sync';
+let flushTimer = null;
+let flushing = false;
+
+function getPending() {
+  try { return JSON.parse(localStorage.getItem(PENDING_KEY) || '[]'); }
+  catch { return []; }
+}
+function setPending(list) {
+  localStorage.setItem(PENDING_KEY, JSON.stringify([...new Set(list)]));
+}
+function markDirty(user, month) {
+  if (!user || !month || month < SYNC_FROM) return;
+  setPending([...getPending(), `${user}|${month}`]);
+}
+// Nach jeder Eingabe/Löschung aufrufen: markiert + startet entprellten Flush
+function syncSoon(user, month) {
+  markDirty(user, month);
+  clearTimeout(flushTimer);
+  flushTimer = setTimeout(flushPending, 1500);
+}
+async function flushPending() {
+  if (flushing) return;
+  const pending = getPending();
+  if (!pending.length) return;
+  flushing = true;
   try {
-    let synced = 0;
-    for (const month of months) {
-      const j = await syncOneMonth(S.user, month);
-      if (j.ok) synced++;
+    for (const key of pending) {
+      const [user, month] = key.split('|');
+      if (!USERS[user] || !month) {                 // ungültiger Eintrag → verwerfen
+        setPending(getPending().filter(k => k !== key));
+        continue;
+      }
+      try {
+        const j = await syncOneMonth(user, month);
+        // Nur bei bestätigtem Erfolg aus der Warteschlange nehmen
+        if (j && j.ok) setPending(getPending().filter(k => k !== key));
+      } catch(e) {
+        // Kein Netz / Server weg → bleibt offen, nächster Versuch später
+        break;
+      }
     }
-    if (synced > 0) {
-      localStorage.setItem(autoKey, new Date().toISOString());
-      showToast(`✓ Auto-Sync: ${synced} Monat${synced>1?'e':''} mit Excel synchronisiert`);
-    }
-  } catch(e) {
-    // Server nicht erreichbar → nächstes Öffnen erneut versuchen, kein Fehler anzeigen
+  } finally {
+    flushing = false;
   }
 }
+// Netz wieder da oder App wieder im Vordergrund → offene Monate nachschicken
+window.addEventListener('online', flushPending);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) flushPending();
+});
 
 // ── SUMMARY / EXPORT ───────────────────────────────────────────────────
 function toggleSummary() {
@@ -1278,6 +1320,7 @@ function pickCat(catKey) {
   const entryMonth = S.inputDate.slice(0,7);
   const entry = addEntry(S.user, entryMonth, {cat:catKey, amount:amt, date:S.inputDate, note});
   S.lastEntry = {...entry, month: entryMonth};
+  syncSoon(S.user, entryMonth);
   closeAdd();
   renderMain();
   const cat = USERS[S.user].cats.find(c=>c.k===catKey);
@@ -1378,7 +1421,9 @@ function showToast(msg) {
 }
 function undoLast() {
   if (!S.lastEntry) return;
-  removeEntry(S.user, S.lastEntry.month || S.month, S.lastEntry.id);
+  const undoMonth = S.lastEntry.month || S.month;
+  removeEntry(S.user, undoMonth, S.lastEntry.id);
+  syncSoon(S.user, undoMonth);
   S.lastEntry=null;
   document.getElementById('toast').classList.remove('show');
   clearTimeout(S.toastTmr);

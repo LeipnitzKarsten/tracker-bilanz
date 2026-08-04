@@ -415,6 +415,22 @@
         "auto": 157.09
       },
       "ts": 1785852257377
+    },
+    {
+      "user": "judith",
+      "month": "2026-08",
+      "totals": {
+        "nahrungsmittel": 29.67,
+        "hobby": 8.99,
+        "geschenke": 0,
+        "pflegemittel": 23.32,
+        "bildung": 13.48,
+        "kinder": 4,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 0
+      },
+      "ts": 1785853076398
     }
   ]
 }

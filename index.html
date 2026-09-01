@@ -298,6 +298,10 @@ html,body{height:100%;
   font-size:14px;font-family:inherit;color:var(--text);
   background:var(--bg);outline:none;
 }
+#gross-inp{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;
+  border:1.5px solid #E5E7EB;font-size:16px;font-family:inherit;background:var(--bg)}
+#gross-inp:focus{outline:none;border-color:#9CA3AF}
+#gross-inp::placeholder{color:var(--muted)}
 #note-inp::placeholder{color:var(--muted)}
 #note-inp:focus{border-color:#9CA3AF}
 
@@ -344,6 +348,7 @@ html,body{height:100%;
 .tile-name{font-size:13px;font-weight:700;line-height:1.2}
 .tile-rem{font-size:11px;color:var(--muted);margin-top:1px}
 .tile-rem.over{color:var(--neg)}
+.cat-tile.gross{background:#FFF4E5;border-color:#F5C77E}
 .back-row{
   display:flex;align-items:center;gap:4px;
   padding:4px 12px 2px;font-size:13px;color:var(--muted);
@@ -582,6 +587,17 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       <div class="cat-grid" id="cat-grid"></div>
     </div>
 
+    <!-- Step 3: Name der großen Ausgabe -->
+    <div id="step-name" style="display:none">
+      <button class="back-row" onclick="showStep('cat')">‹ Zurück</button>
+      <div class="sheet-title" id="name-step-title">Wofür war die Ausgabe?</div>
+      <input type="text" id="gross-inp" placeholder="z. B. Auto, Waschmaschine, Urlaub"
+        maxlength="40" autocorrect="off" autocapitalize="sentences">
+      <button class="nk go" id="gross-save" onclick="saveGross()" style="width:100%;margin-top:14px">
+        Speichern
+      </button>
+    </div>
+
     <div class="bottom-spacer" style="background:#fff"></div>
   </div>
 </div>
@@ -653,6 +669,7 @@ const USERS = {
       {k:'einrichtung',    label:'Einrichtung',    icon:'🏠', budget:150},
       {k:'buero',          label:'Büro',           icon:'📎', budget:50},
       {k:'auto',           label:'Auto/KFZ',       icon:'🚗', budget:100},
+      {k:'grossausgabe',   label:'Große Ausgabe',  icon:'🧾', budget:0},
     ]
   },
   judith: {
@@ -667,6 +684,7 @@ const USERS = {
       {k:'einrichtung',    label:'Einrichtung',    icon:'🏠', budget:35},
       {k:'buero',          label:'Büro',           icon:'📎', budget:12},
       {k:'auto',           label:'Auto/KFZ',       icon:'🚗', budget:0},
+      {k:'grossausgabe',   label:'Große Ausgabe',  icon:'🧾', budget:0},
     ]
   }
 };
@@ -676,6 +694,7 @@ const S = {
   user: null,
   month: nowMonth(),
   syncMonth: nowMonth(),
+  pendingGross: null,
   chart: null,
   input: '',
   inputDate: today(),
@@ -746,7 +765,8 @@ function totals(user, month) {
   return t;
 }
 function totalSpent(user, month) {
-  return load(user,month).reduce((s,e)=>s+e.amount, 0);
+  // Große Ausgaben bleiben aussen vor — sonst sprengt ein Auto die Monatsuebersicht
+  return load(user,month).filter(e=>e.cat!=='grossausgabe').reduce((s,e)=>s+e.amount, 0);
 }
 function purgeOld() {
   const cutoff = monthBack(nowMonth(), 3);
@@ -1076,6 +1096,7 @@ async function doSync() {
     user: S.user,
     month: S.syncMonth,
     totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100])),
+    grosse: grosseListe(S.user, S.syncMonth),
   };
   box.className='result-box info';
   box.textContent='⏳ Synchronisiere …';
@@ -1095,12 +1116,19 @@ async function doSync() {
 
 // ── AUTO-SYNC ──────────────────────────────────────────────────────────
 // Einmal pro Monat: letzte 3 Monate still im Hintergrund synchronisieren
+function grosseListe(user, month) {
+  return load(user, month)
+    .filter(e => e.cat === 'grossausgabe')
+    .map(e => ({date: e.date, amount: Math.round(e.amount*100)/100, note: e.note || ''}))
+    .sort((a,b) => a.date < b.date ? -1 : 1);
+}
 async function syncOneMonth(user, month) {
   const u = USERS[user];
   const t = totals(user, month);
   const payload = {
     user, month,
-    totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100]))
+    totals: Object.fromEntries(u.cats.map(c=>[c.k, Math.round((t[c.k]||0)*100)/100])),
+    grosse: grosseListe(user, month)
   };
   return sendToRelay(payload, 5000);
 }
@@ -1287,6 +1315,7 @@ function maybeCloseAdd(e) {
 function showStep(name) {
   document.getElementById('step-amount').style.display = name==='amount'?'block':'none';
   document.getElementById('step-cat').style.display = name==='cat'?'block':'none';
+  document.getElementById('step-name').style.display = name==='name'?'block':'none';
 }
 function showCats() {
   const amt = parseAmt();
@@ -1303,8 +1332,10 @@ function showCats() {
         <div class="tile-ic">${cat.icon}</div>
         <div>
           <div class="tile-name">${cat.label}</div>
-          <div class="tile-rem${rem<0?' over':''}">
-            ${rem>=0?'noch '+eur(rem):'überzogen '+eur(-rem)}
+          <div class="tile-rem">
+            ${cat.k==='grossausgabe'
+               ? (spent>0 ? 'bisher '+eur(spent) : 'einzeln erfasst')
+               : (rem>=0?'noch '+eur(rem):'überzogen '+eur(-rem))}
           </div>
         </div>
       </div>`;
@@ -1315,6 +1346,16 @@ function showCats() {
 function pickCat(catKey) {
   const amt = parseAmt();
   if (!amt) return;
+  // Große Ausgabe: erst fragen, wofür — dann speichern
+  if (catKey === 'grossausgabe') {
+    S.pendingGross = amt;
+    const gi = document.getElementById('gross-inp');
+    gi.value = document.getElementById('note-inp').value.trim();
+    document.getElementById('name-step-title').textContent = `${eur(amt)} — wofür?`;
+    showStep('name');
+    setTimeout(()=>gi.focus(), 250);
+    return;
+  }
   const note = document.getElementById('note-inp').value.trim();
   // Save to the month of the selected date, not necessarily S.month
   const entryMonth = S.inputDate.slice(0,7);
@@ -1326,6 +1367,27 @@ function pickCat(catKey) {
   const cat = USERS[S.user].cats.find(c=>c.k===catKey);
   const isOtherMonth = entryMonth !== S.month;
   showToast(`${cat?.icon||''} −${eur(amt)} ${isOtherMonth ? 'in '+monthLabel(entryMonth)+' ' : ''}gespeichert`);
+}
+function saveGross() {
+  const amt = S.pendingGross;
+  if (!amt) return;
+  const name = document.getElementById('gross-inp').value.trim();
+  if (!name) {                                  // Name ist Pflicht — sonst steht nur "?" in der Liste
+    const gi = document.getElementById('gross-inp');
+    gi.style.borderColor = 'var(--neg)';
+    gi.placeholder = 'Bitte kurz eintragen, wofür';
+    gi.focus();
+    return;
+  }
+  const entryMonth = S.inputDate.slice(0,7);
+  const entry = addEntry(S.user, entryMonth, {cat:'grossausgabe', amount:amt, date:S.inputDate, note:name});
+  S.lastEntry = {...entry, month: entryMonth};
+  syncSoon(S.user, entryMonth);
+  S.pendingGross = null;
+  document.getElementById('gross-inp').style.borderColor = '';
+  closeAdd();
+  renderMain();
+  showToast(`🧾 −${eur(amt)} · ${name} gespeichert`);
 }
 function parseAmt() {
   return parseFloat(S.input.replace(',','.')) || 0;

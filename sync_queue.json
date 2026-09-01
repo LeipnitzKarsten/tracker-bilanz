@@ -1,3 +1,22 @@
 {
-  "items": []
+  "items": [
+    {
+      "user": "judith",
+      "month": "2026-07",
+      "totals": {
+        "nahrungsmittel": 471.8,
+        "hobby": 0,
+        "geschenke": 10,
+        "pflegemittel": 286.4,
+        "bildung": 402,
+        "kinder": 346.24,
+        "einrichtung": 79,
+        "buero": 0,
+        "auto": 25.3,
+        "grossausgabe": 0
+      },
+      "grosse": [],
+      "ts": 1788274796908
+    }
+  ]
 }

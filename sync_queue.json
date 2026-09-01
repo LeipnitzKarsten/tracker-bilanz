@@ -59,6 +59,35 @@
       },
       "grosse": [],
       "ts": 1788265767410
+    },
+    {
+      "user": "karsten",
+      "month": "2026-09",
+      "totals": {
+        "nahrungsmittel": 0,
+        "hobby": 0,
+        "geschenke": 0,
+        "pflegemittel": 0,
+        "bildung": 0,
+        "kinder": 5.86,
+        "einrichtung": 59,
+        "buero": 0,
+        "auto": 0,
+        "grossausgabe": 2800
+      },
+      "grosse": [
+        {
+          "date": "2026-09-01",
+          "amount": 2000,
+          "note": "Test"
+        },
+        {
+          "date": "2026-09-01",
+          "amount": 800,
+          "note": "Hjdkd"
+        }
+      ],
+      "ts": 1788265777096
     }
   ]
 }

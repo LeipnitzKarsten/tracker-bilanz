@@ -298,10 +298,25 @@ html,body{height:100%;
   font-size:14px;font-family:inherit;color:var(--text);
   background:var(--bg);outline:none;
 }
-#gross-inp{width:100%;box-sizing:border-box;padding:13px 14px;border-radius:12px;
-  border:1.5px solid #E5E7EB;font-size:16px;font-family:inherit;background:var(--bg)}
-#gross-inp:focus{outline:none;border-color:#9CA3AF}
+#step-name{padding-bottom:8px}
+#gross-inp{
+  display:block;box-sizing:border-box;
+  width:calc(100% - 40px);margin:30px 20px 0;
+  padding:15px 16px;border-radius:14px;
+  border:1.5px solid var(--border);
+  font-size:16px;font-family:inherit;color:var(--text);
+  background:var(--bg);outline:none;
+}
+#gross-inp:focus{border-color:#9CA3AF}
 #gross-inp::placeholder{color:var(--muted)}
+#gross-save{
+  display:block;width:auto;min-width:190px;margin:30px auto 4px;
+  padding:16px 40px;border:none;border-radius:16px;
+  background:linear-gradient(135deg,#1A1A2E 0%,#0F3460 100%);
+  color:#fff;font-size:15px;font-weight:700;font-family:inherit;
+  box-shadow:0 6px 20px rgba(15,52,96,.35);cursor:pointer;
+}
+#gross-save:active{transform:scale(.98)}
 #note-inp::placeholder{color:var(--muted)}
 #note-inp:focus{border-color:#9CA3AF}
 
@@ -348,7 +363,8 @@ html,body{height:100%;
 .tile-name{font-size:13px;font-weight:700;line-height:1.2}
 .tile-rem{font-size:11px;color:var(--muted);margin-top:1px}
 .tile-rem.over{color:var(--neg)}
-.cat-tile.gross{background:#FFF4E5;border-color:#F5C77E}
+.cat-tile.gross{background:#FFE9E9;border-color:#E5484D}
+.cat-tile.gross .tile-name{color:#C0272D}
 .back-row{
   display:flex;align-items:center;gap:4px;
   padding:4px 12px 2px;font-size:13px;color:var(--muted);
@@ -593,9 +609,7 @@ input[type=date]{position:absolute;opacity:0;pointer-events:none;width:0;height:
       <div class="sheet-title" id="name-step-title">Wofür war die Ausgabe?</div>
       <input type="text" id="gross-inp" placeholder="z. B. Auto, Waschmaschine, Urlaub"
         maxlength="40" autocorrect="off" autocapitalize="sentences">
-      <button class="nk go" id="gross-save" onclick="saveGross()" style="width:100%;margin-top:14px">
-        Speichern
-      </button>
+      <button id="gross-save" onclick="saveGross()">Speichern</button>
     </div>
 
     <div class="bottom-spacer" style="background:#fff"></div>
@@ -827,7 +841,10 @@ function renderMain() {
   document.getElementById('btn-next').disabled = S.month >= nowMonth();
 
   const t = totals(S.user, S.month);
-  const spent = Object.values(t).reduce((s,v)=>s+v, 0);
+  // Große Ausgaben zählen nicht gegen das Monatsbudget
+  const spent = Object.entries(t)
+    .filter(([k]) => k !== 'grossausgabe')
+    .reduce((s,[,v]) => s+v, 0);
   const budget = getBudget(S.user);
   const rem = budget - spent;
 
@@ -843,7 +860,7 @@ function renderMain() {
   document.getElementById('main-ballabel').textContent = rem<0 ? 'Überzogen um' : 'Noch verfügbar';
   document.getElementById('main-balamount').textContent = eur(Math.abs(rem));
 
-  renderChart(t, u.cats);
+  renderChart(t, u.cats.filter(c => c.k !== 'grossausgabe'));
 }
 
 function renderChart(t, cats) {

@@ -35,6 +35,30 @@
       },
       "grosse": [],
       "ts": 1788274813291
+    },
+    {
+      "user": "judith",
+      "month": "2026-09",
+      "totals": {
+        "nahrungsmittel": 0,
+        "hobby": 0,
+        "geschenke": 0,
+        "pflegemittel": 0,
+        "bildung": 0,
+        "kinder": 0,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 0,
+        "grossausgabe": 400
+      },
+      "grosse": [
+        {
+          "date": "2026-09-01",
+          "amount": 400,
+          "note": "Urlaub"
+        }
+      ],
+      "ts": 1788274814538
     }
   ]
 }

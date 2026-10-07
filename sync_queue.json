@@ -5758,6 +5758,40 @@
       },
       "grosse": [],
       "ts": 1791390359166
+    },
+    {
+      "user": "judith",
+      "month": "2026-09",
+      "totals": {
+        "nahrungsmittel": 396.26,
+        "hobby": 0,
+        "geschenke": 2.59,
+        "pflegemittel": 100.37,
+        "bildung": 3.45,
+        "kinder": 146.3,
+        "einrichtung": 0,
+        "buero": 2.58,
+        "auto": 0,
+        "grossausgabe": 963.67
+      },
+      "grosse": [
+        {
+          "date": "2026-09-10",
+          "amount": 522.67,
+          "note": "Paartherapie"
+        },
+        {
+          "date": "2026-09-16",
+          "amount": 245,
+          "note": "Klassenfahrt Elisa"
+        },
+        {
+          "date": "2026-09-30",
+          "amount": 196,
+          "note": "Paartherapie"
+        }
+      ],
+      "ts": 1791390361362
     }
   ]
 }

@@ -8834,6 +8834,30 @@
         }
       ],
       "ts": 1793025028350
+    },
+    {
+      "user": "karsten",
+      "month": "2026-10",
+      "totals": {
+        "nahrungsmittel": 854.71,
+        "hobby": 399.02,
+        "geschenke": 0,
+        "pflegemittel": 124.09,
+        "bildung": 0,
+        "kinder": 172.4,
+        "einrichtung": 32.38,
+        "buero": 0,
+        "auto": 353.93,
+        "grossausgabe": 267.98
+      },
+      "grosse": [
+        {
+          "date": "2026-10-14",
+          "amount": 267.98,
+          "note": "Autoreparatur"
+        }
+      ],
+      "ts": 1793026563275
     }
   ]
 }

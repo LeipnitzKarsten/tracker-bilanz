@@ -9036,6 +9036,24 @@
       },
       "grosse": [],
       "ts": 1793124039557
+    },
+    {
+      "user": "judith",
+      "month": "2026-10",
+      "totals": {
+        "nahrungsmittel": 162.25,
+        "hobby": 285.17,
+        "geschenke": 0,
+        "pflegemittel": 0,
+        "bildung": 0,
+        "kinder": 70.66,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 0,
+        "grossausgabe": 0
+      },
+      "grosse": [],
+      "ts": 1793124043841
     }
   ]
 }

@@ -933,6 +933,30 @@
       },
       "grosse": [],
       "ts": 1794046123961
+    },
+    {
+      "user": "judith",
+      "month": "2026-11",
+      "totals": {
+        "nahrungsmittel": 17.34,
+        "hobby": 0,
+        "geschenke": 0,
+        "pflegemittel": 42.79,
+        "bildung": 0,
+        "kinder": 0,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 29.3,
+        "grossausgabe": 139
+      },
+      "grosse": [
+        {
+          "date": "2026-11-02",
+          "amount": 139,
+          "note": "Paartherapie"
+        }
+      ],
+      "ts": 1794057088225
     }
   ]
 }

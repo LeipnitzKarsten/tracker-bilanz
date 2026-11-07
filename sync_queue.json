@@ -1141,6 +1141,24 @@
       },
       "grosse": [],
       "ts": 1794058735258
+    },
+    {
+      "user": "karsten",
+      "month": "2026-11",
+      "totals": {
+        "nahrungsmittel": 162.24,
+        "hobby": 73.98,
+        "geschenke": 102.25,
+        "pflegemittel": 0,
+        "bildung": 0,
+        "kinder": 135.67,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 0,
+        "grossausgabe": 0
+      },
+      "grosse": [],
+      "ts": 1794071796038
     }
   ]
 }

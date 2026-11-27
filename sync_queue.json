@@ -3937,6 +3937,35 @@
       },
       "grosse": [],
       "ts": 1795785355909
+    },
+    {
+      "user": "judith",
+      "month": "2026-11",
+      "totals": {
+        "nahrungsmittel": 128.98,
+        "hobby": 160.4,
+        "geschenke": 11,
+        "pflegemittel": 73.99,
+        "bildung": 0,
+        "kinder": 153.79,
+        "einrichtung": 0,
+        "buero": 0,
+        "auto": 29.3,
+        "grossausgabe": 359
+      },
+      "grosse": [
+        {
+          "date": "2026-11-02",
+          "amount": 139,
+          "note": "Paartherapie"
+        },
+        {
+          "date": "2026-11-24",
+          "amount": 220,
+          "note": "Zuzahlung Kur"
+        }
+      ],
+      "ts": 1795785358615
     }
   ]
 }

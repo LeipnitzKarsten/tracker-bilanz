@@ -3966,6 +3966,45 @@
         }
       ],
       "ts": 1795785358615
+    },
+    {
+      "user": "karsten",
+      "month": "2026-11",
+      "totals": {
+        "nahrungsmittel": 443.91,
+        "hobby": 125.74,
+        "geschenke": 102.25,
+        "pflegemittel": 59.84,
+        "bildung": 0,
+        "kinder": 149.67,
+        "einrichtung": 54.99,
+        "buero": 0,
+        "auto": 152.46,
+        "grossausgabe": 1358.89
+      },
+      "grosse": [
+        {
+          "date": "2026-11-24",
+          "amount": 372.42,
+          "note": "Hedwig Operation"
+        },
+        {
+          "date": "2026-11-24",
+          "amount": 275,
+          "note": "Klarinette"
+        },
+        {
+          "date": "2026-11-27",
+          "amount": 603.98,
+          "note": "Kinder Weihnachtsgeschenke"
+        },
+        {
+          "date": "2026-11-27",
+          "amount": 107.49,
+          "note": "Kinder Weihnachtsgeschenke"
+        }
+      ],
+      "ts": 1795808781686
     }
   ]
 }
